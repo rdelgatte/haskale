@@ -3,14 +3,17 @@ module Lib
   ) where
 
 import Constants
+import Data.List (find)
 import Data.Text (Text)
-import Model.Beer
+import Model.Beer as B
 import Network.Wai.Handler.Warp (defaultSettings, runSettings, setBeforeMainLoop, setPort)
 import Servant
 
 type PingApi = "ping" :> Get '[ PlainText] Text
 
-type ApplicationApi = PingApi :<|> "beers" :> Get '[ JSON] [Beer]
+type FindBeerById = "beers" :> Capture "id" Int :> Get '[ JSON] (Maybe Beer)
+
+type ApplicationApi = PingApi :<|> "beers" :> Get '[ JSON] [Beer] :<|> FindBeerById
 
 runServer :: IO ()
 runServer = do
@@ -25,7 +28,10 @@ pingHandler :: Handler Text
 pingHandler = return "Pong"
 
 server :: Server ApplicationApi
-server = pingHandler :<|> beersHandler
+server = pingHandler :<|> beersHandler :<|> beerByIdHandler
 
 beersHandler :: Handler [Beer]
 beersHandler = pure beers
+
+beerByIdHandler :: Int -> Handler (Maybe Beer)
+beerByIdHandler searched = pure (find (\beer -> B.id beer == searched) beers)

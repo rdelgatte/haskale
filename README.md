@@ -113,6 +113,8 @@ Some tests are already defined to validate the implementation so your goal is to
 
 A tip: `encode :: ToJSON a => a -> ByteString`
 
+**Expected result:** the tests should pass.
+
 ### Step 2 - Get all beers!
 
 So now, how to get all the beers? 
@@ -136,9 +138,27 @@ beersHandler = ??
 
 - Update the function `mkApp` to return the right type
 
-- Run the application and open your browser to check `http://localhost:3000/beers` 
+- Run the application and open your browser to check `http://localhost:3000/beers`
+
+**Expected result:** it should return the list of beers as a JSON array 
 
 ### Step 3 - Find the beer
+
+Let's get a specific beer by its `id` now: `GET /beers/{searched_id}`
+
+- Create the endpoint as a specific type like: `type FindBeerById = ...`
+You will have to "Capture" the provided id in the path parameters. You can find documentation and example [here](https://hackage.haskell.org/package/servant-0.7.1/docs/Servant-API-Capture.html).
+
+This endpoint may return a beer if it exists in the list but it can also return `Nothing`. What should be the output type of this endpoint?
+
+- Create the associated handler function which will take the `searchedId` in parameter.
+
+- Add the endpoint to `ApplicationApi` and get the code compiling
+
+**Expected result:** 
+- If the beer exist, it should return it
+- Else, it should return `Nothing` which is encoded to `null` in Json
+
 ### Step 4 - JSON to Model (Aeson - decode)
 ### Step 5 - Draft your beer (`POST`)
 ### Step 6 - Pimp it (`PUT`)
