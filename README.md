@@ -90,8 +90,54 @@ Good job! You defined your first http endpoint in Haskell with Servant!
 
 ### Step 1 - Model to JSON (Aeson - encode)
 
+In [Model directory](src/Model), we have a simple model definition with a `Beer` and `BeerStyle` modules. 
+
+We know we want to deal with this model as JSON as output so we have to define a way to encode these models to JSON. 
+
+To do so, we are going to use [Aeson](http://hackage.haskell.org/package/aeson) which has already been added as dependency to the project. 
+
+Some tests are already defined to validate the implementation so your goal is to propose a way to get the model as encoded.
+
+- First, you need to comment the following tests in [test/Model/BeerSpec.hs](test/Model/BeerSpec.hs): 
+```haskell
+--test_jsonInverse =
+--  testProperty "When encoding and decoding an beer, it returns the original beer" $ \(anyBeer :: Beer) ->
+--    Just anyBeer === decode (encode anyBeer)
+--
+--test_jsonInjective =
+--  testProperty "When encoding different beers, the JSONs are different" $ \(beer1 :: Beer) (beer2 :: Beer) ->
+--    beer1 /= beer2 ==> encode beer1 =/= encode beer2
+```
+- Run the tests: `stack test --file-watch`
+- Then you can update [src/Model/Beer.hs](src/Model/Beer.hs) to fix the tests
+
+A tip: `encode :: ToJSON a => a -> ByteString`
 
 ### Step 2 - Get all beers!
+
+So now, how to get all the beers? 
+
+In [src/Constants.hs](src/Constants.hs) there is a `beers` function which returns a list of beers we want to return when calling `GET /beers`.
+
+- Create a `ApplicationAPI` type as below: 
+```haskell
+type ApplicationApi = PingApi :<|> "beers" :> Get '[ JSON] [Beer]
+```
+In this type, we get the previously created `Ping` and we define a new endpoint over `/beers` using the `Get` request. This return a JSON formatted list of `Beer`.
+
+- Create the associated handler of the newly created endpoints:
+```haskell
+beersHandler :: Handler [Beer]
+beersHandler = ??
+``` 
+- Change server signature to: `server :: Server ApplicationApi` as now, it does not only handle the `ping` but the `ApplicationAPI`. 
+
+- Update the code to get the compiler happy (you can combine handlers with `:<|>`). What happens if you change the order? Why?
+
+- Update the function `mkApp` to return the right type
+
+- Run the application and open your browser to check `http://localhost:3000/beers` 
+
 ### Step 3 - Find the beer
 ### Step 4 - JSON to Model (Aeson - decode)
 ### Step 5 - Draft your beer (`POST`)

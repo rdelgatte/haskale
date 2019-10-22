@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2bafdf882554bec4cc474f3d89d2ac7fde9677e28ee716e70dfc4bd395077f37
+-- hash: cc97bfb6c82ac496e99fc1a1b5a3f2c30942324b8cfa448318bb7379e0f68e46
 
 name:           hask-ale
 version:        0.1.0.0
@@ -25,7 +25,12 @@ source-repository head
 
 library
   exposed-modules:
+      Constants
+      Json.Custom
+      Json.Swagger
       Lib
+      Model.Beer
+      Model.BeerStyle
   other-modules:
       Paths_hask_ale
   hs-source-dirs:
@@ -91,6 +96,8 @@ test-suite hask-ale-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      Generators
+      Model.BeerSpec
       Paths_hask_ale
   hs-source-dirs:
       test
