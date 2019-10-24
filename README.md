@@ -61,7 +61,7 @@ type PingApi = "ping" :> Get '[???] ??? -- GET /ping
 
 - Secondly, you need to create the handler which will return the expected feedback when the ping endpoint is called: 
 ```haskell
-pingHandler :: Handler ??
+pingHandler :: AppContext ??
 pingHandler = return ??
 ```
 
@@ -129,7 +129,7 @@ In this type, we get the previously created `Ping` and we define a new endpoint 
 
 - Create the associated handler of the newly created endpoints:
 ```haskell
-beersHandler :: Handler [Beer]
+beersHandler :: AppContext [Beer]
 beersHandler = ??
 ``` 
 - Change server signature to: `server :: Server ApplicationApi` as now, it does not only handle the `ping` but the `ApplicationAPI`. 
@@ -189,7 +189,12 @@ So you'd like to draft your own beer. To do so, we will need to create it by req
 - You will have to fix the compilation issue as there is no handler for this new endpoint so you need to create it
     - It will take the beer as parameter
     - It will return `NoContent`
-    - The handler will have to deal with the saving of the new beer 
+
+The handler will have to deal with saving the provided beer. To do so, you can use: `insert $ toRow beer` which will return the key of the saved entity so you can bind it to a variable.
+
+You can then use `liftIO . putStrLn $ "Saved beer with key = " <> show beerId` to log the saved beer to the console.
+
+- What happens if you try to create a malformed Json document? 
 
 ### Step 6 - Pimp it (`PUT`)
 ### Step 7 - Drink it (`DELETE`)

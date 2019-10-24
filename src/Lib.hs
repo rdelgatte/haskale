@@ -73,4 +73,7 @@ beerByIdHandler :: Int -> AppContext (Maybe Beer)
 beerByIdHandler searched = pure (find (\beer -> B.id beer == searched) beers)
 
 createBeerHandler :: Beer -> AppContext NoContent
-createBeerHandler beer = pure NoContent
+createBeerHandler beer = do
+  key <- insert $ toRow beer
+  liftIO . putStrLn $ "Saved beer " <> show beer <> " with key = " <> show key
+  return NoContent
