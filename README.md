@@ -196,6 +196,48 @@ You can then use `liftIO . putStrLn $ "Saved beer with key = " <> show beerId` t
 
 - What happens if you try to create a malformed Json document? 
 
-### Step 6 - Pimp it (`PUT`)
-### Step 7 - Drink it (`DELETE`)
-### Step 8 - Swagg'it (Swagger)
+**Expected result:** When creating a Beer as following, it should work. 
+```
+$ curl --request POST \
+   --url http://localhost:3000/beers \
+   --header 'content-type: application/json' \
+   --cookie JSESSIONID=8BE347DF4D94AE3FFE227E97113825B6 \
+   --data '{
+   "alcohol": 5.4,
+   "name": "Brewdog IPA 2",
+   "style": "INDIA_PALE_ALE"
+ }'
+```
+
+### Step 6 - Get all the beers again!
+
+Now we persist beers in a memory DB, we can refactor the handler which returns all the beers so it fetches them form the DB instead of the [src/Constants.hs file](src/Constants.hs).  
+
+Update `beersHandler` function so it fetches all the beers from the DB. 
+
+You can use the following statement to retrieve all the `Beers` from the database. 
+```haskell
+do
+  beersFromDB :: [Entity BeerRow] <- selectList [] []
+  ... 
+```
+Note that `selectList` takes 2 parameters: 
+- a list of filters (= `where` clauses)
+- a list of `SelectOps` (like `limit`)
+
+Then, you need to transform this list of `Entity BeerRow` to a list of `Beer` so you can use function `DatabaseStuff#fromRow`: 
+```haskell
+fromRow :: Entity BeerRow -> Beer
+```
+
+Tip: use `fmap` to iterate over `[Entity BeerRow]` so you can apply the transformation.
+
+**Expected result:** After creating some beers, requesting all should return all of them:
+```
+$ curl --request GET --url http://localhost:3000/beers
+[{"style":"INDIA_PALE_ALE","alcohol":5.4,"name":"Brewdog IPA","id":1},{"style":"INDIA_PALE_ALE","alcohol":6,"name":"Anosteke IPA","id":2}]
+```
+
+### Step 7 - Pimp it (`PUT`)
+### Step 8 - Drink it (`DELETE`)
+### Step 9 - Swagg'it (Swagger)

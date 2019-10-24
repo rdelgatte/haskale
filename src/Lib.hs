@@ -8,29 +8,27 @@ import Control.Monad.Except (ExceptT(..))
 import Control.Monad.IO.Class
 import Control.Monad.Logger
 import Control.Monad.Reader
+import Data.Int (Int64)
 import Data.List (find)
-import Data.Text (Text, pack)
+import Data.Text (Text)
 import Database.Persist
 import Database.Persist.Sqlite
 import Model.Beer as B
-import Model.BeerStyle
 import Network.Wai.Handler.Warp (defaultSettings, runSettings, setBeforeMainLoop, setPort)
 import Persistence.DatabaseStuff
 import Servant
 
 type PingApi = "ping" :> Get '[ PlainText] Text
 
-type TestApi = "test" :> Get '[ PlainText] Text
-
 type BeerInput = ReqBody '[ JSON] Beer
 
-type FindBeerById = "beers" :> Capture "id" Int :> Get '[ JSON] (Maybe Beer)
+type FindBeerById = "beers" :> Capture "id" Int64 :> Get '[ JSON] (Maybe Beer)
 
 type AppContext = ReaderT SqlBackend IO
 
 type CreateBeer = "beers" :> BeerInput :> PostNoContent '[ JSON] NoContent
 
-type ApplicationApi = PingApi :<|> "beers" :> Get '[ JSON] [Beer] :<|> FindBeerById :<|> CreateBeer :<|> TestApi
+type ApplicationApi = PingApi :<|> "beers" :> Get '[ JSON] [Beer] :<|> FindBeerById :<|> CreateBeer
 
 runServer :: IO ()
 runServer = do
@@ -57,20 +55,15 @@ pingHandler :: AppContext Text
 pingHandler = return "Pong"
 
 server :: ServerT ApplicationApi AppContext
-server = pingHandler :<|> beersHandler :<|> beerByIdHandler :<|> createBeerHandler :<|> testHandler
-
-testHandler :: AppContext Text
-testHandler = do
-  beerId <- insert $ toRow $ Beer {id = 1, name = "Brewdog IPA", style = IndiaPaleAle, alcohol = Just 5.4}
-  beersFromDB :: [Entity BeerRow] <- selectList [] []
-  liftIO . putStrLn $ "Beers in database are: " <> show beersFromDB
-  return . pack . show $ fromRow <$> beersFromDB
+server = pingHandler :<|> beersHandler :<|> beerByIdHandler :<|> createBeerHandler
 
 beersHandler :: AppContext [Beer]
-beersHandler = pure beers
+beersHandler = do
+  beersFromDB :: [Entity BeerRow] <- selectList [] []
+  return $ fromRow <$> beersFromDB
 
-beerByIdHandler :: Int -> AppContext (Maybe Beer)
-beerByIdHandler searched = pure (find (\beer -> B.id beer == searched) beers)
+beerByIdHandler :: Int64 -> AppContext (Maybe Beer)
+beerByIdHandler searched = pure (find (\beer -> B.id beer == Just searched) beers)
 
 createBeerHandler :: Beer -> AppContext NoContent
 createBeerHandler beer = do

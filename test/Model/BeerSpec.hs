@@ -19,13 +19,13 @@ beerWithoutAlcoholRateAsJson :: ByteString
 beerWithoutAlcoholRateAsJson =
   [r|{
   "alcohol": null,
-  "id": 1,
+  "id": null,
   "name": "Brewdog IPA",
   "style": "INDIA_PALE_ALE"
 }|]
 
 beerWithoutAlcoholRate :: Beer
-beerWithoutAlcoholRate = Beer {id = 1, name = "Brewdog IPA", style = IndiaPaleAle, alcohol = Nothing}
+beerWithoutAlcoholRate = Beer {id = Nothing, name = "Brewdog IPA", style = IndiaPaleAle, alcohol = Nothing}
 
 beerWithAlcoholRateAsJson :: ByteString
 beerWithAlcoholRateAsJson =
@@ -37,7 +37,7 @@ beerWithAlcoholRateAsJson =
 }|]
 
 beerWithAlcoholRate :: Beer
-beerWithAlcoholRate = Beer {id = 1, name = "Brewdog IPA", style = IndiaPaleAle, alcohol = Just 5.4}
+beerWithAlcoholRate = Beer {id = Just 1, name = "Brewdog IPA", style = IndiaPaleAle, alcohol = Just 5.4}
 
 test_encodeValidBeerWithoutAlcoholRate =
   testCase "When encoding a beer without alcohol rate, it returns a JSON" $

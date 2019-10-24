@@ -44,5 +44,10 @@ toRow :: Beer -> BeerRow
 toRow Beer {..} = BeerRow {beerRowName = name, beerRowStyle = style, beerRowAlcohol = toRealFloat <$> alcohol}
 
 fromRow :: Entity BeerRow -> Beer
-fromRow Entity {entityVal = BeerRow {..}} =
-  Beer {id = 42, name = beerRowName, style = beerRowStyle, alcohol = fromFloatDigits <$> beerRowAlcohol}
+fromRow Entity {entityKey, entityVal = BeerRow {..}} =
+  Beer
+    { id = Just $ fromSqlKey entityKey
+    , name = beerRowName
+    , style = beerRowStyle
+    , alcohol = fromFloatDigits <$> beerRowAlcohol
+    }
