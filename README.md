@@ -98,15 +98,15 @@ To do so, we are going to use [Aeson](http://hackage.haskell.org/package/aeson) 
 
 Some tests are already defined to validate the implementation so your goal is to propose a way to get the model as encoded.
 
-- First, you need to comment the following tests in [test/Model/BeerSpec.hs](test/Model/BeerSpec.hs): 
+- First, you need to uncomment the following tests in [test/Model/BeerSpec.hs](test/Model/BeerSpec.hs): 
 ```haskell
---test_jsonInverse =
---  testProperty "When encoding and decoding an beer, it returns the original beer" $ \(anyBeer :: Beer) ->
---    Just anyBeer === decode (encode anyBeer)
---
---test_jsonInjective =
---  testProperty "When encoding different beers, the JSONs are different" $ \(beer1 :: Beer) (beer2 :: Beer) ->
---    beer1 /= beer2 ==> encode beer1 =/= encode beer2
+test_encodeValidBeerWithoutAlcoholRate =
+  testCase "When encoding a beer without alcohol rate, it returns a JSON" $
+  encodePretty' encodePrettyOptions beerWithoutAlcoholRate @?= beerWithoutAlcoholRateAsJson
+
+test_encodeValidBeerWithAlcoholRate =
+  testCase "When encoding a beer with alcohol rate, it returns a JSON" $
+  encodePretty' encodePrettyOptions beerWithAlcoholRate @?= beerWithAlcoholRateAsJson
 ```
 - Run the tests: `stack test --file-watch`
 - Then you can update [src/Model/Beer.hs](src/Model/Beer.hs) to fix the tests
@@ -160,7 +160,37 @@ This endpoint may return a beer if it exists in the list but it can also return 
 - Else, it should return `Nothing` which is encoded to `null` in Json
 
 ### Step 4 - JSON to Model (Aeson - decode)
+
+In order to be able to create new beers using a Json body, we need to define the way the beers will be decoded from JSON. 
+
+- First, you need to uncomment the remaining tests in [test/Model/BeerSpec.hs](test/Model/BeerSpec.hs) 
+- Run the tests: `stack test --file-watch`
+- Then you can update [src/Model/Beer.hs](src/Model/Beer.hs) to fix the tests
+
+**Expected result:** the tests should pass.
+
 ### Step 5 - Draft your beer (`POST`)
+
+So you'd like to draft your own beer. To do so, we will need to create it by requesting to `POST /beers` passing the beer as Json request body like below: 
+
+```json
+{
+  "id": 1,
+  "name": "Brewdog IPA",
+  "alcohol": 5.4,
+  "style": "INDIA_PALE_ALE"
+}
+```
+
+- First, you need to create the endpoint as before: 
+    - You will need to provide a request body as Json of Beer model (`ReqBody '[ JSON] Beer`)
+    - The request will return nothing so you can use `PostNoContent` and `NoContent` as payload
+- Then you can add this new endpoint to the `ApplicationApi` definition to expose it 
+- You will have to fix the compilation issue as there is no handler for this new endpoint so you need to create it
+    - It will take the beer as parameter
+    - It will return `NoContent`
+    - The handler will have to deal with the saving of the new beer 
+
 ### Step 6 - Pimp it (`PUT`)
 ### Step 7 - Drink it (`DELETE`)
 ### Step 8 - Swagg'it (Swagger)

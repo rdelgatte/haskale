@@ -16,3 +16,5 @@ data Beer =
   deriving (Generic, Show, Eq)
 
 instance ToJSON Beer
+
+instance FromJSON Beer
