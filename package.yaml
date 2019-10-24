@@ -60,6 +60,12 @@ dependencies:
   - servant-swagger-ui
   - swagger2
   - insert-ordered-containers
+  # Database stuff (Persistent requires MTL and Logger functions...)
+  - persistent
+  - persistent-sqlite
+  - persistent-template
+  - mtl
+  - monad-logger
 
 default-extensions:
   - AutoDeriveTypeable

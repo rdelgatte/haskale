@@ -1,9 +1,10 @@
 module Model.BeerStyle where
 
-import           Data.Aeson
-import           Data.Swagger
-import           GHC.Generics (Generic)
-import           Json.Custom
+import Data.Aeson
+import Data.Swagger
+import Database.Persist.TH
+import GHC.Generics (Generic)
+import Json.Custom
 
 data BeerStyle
   = Altbier
@@ -51,7 +52,9 @@ data BeerStyle
   | Witbier
   | Weissbier
   | Weizenbock
-  deriving (Generic, Show, Eq)
+  deriving (Generic, Show, Eq, Read)
+
+derivePersistField "BeerStyle"
 
 instance FromJSON BeerStyle where
   parseJSON = genericParseJSON upperSnakeOptions
