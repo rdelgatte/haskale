@@ -239,5 +239,19 @@ $ curl --request GET --url http://localhost:3000/beers
 ```
 
 ### Step 7 - Pimp it (`PUT`)
+
+You can now create and find beers but how would we upgrade a beer?
+
+- Create a `PUT /beers/{$beerId}` endpoint with `Beer` as a Json payload. 
+- As before, add this endpoint to `ApplicationApi` and create the handler so it will update the beer in database whose id is the provided `beerId` from the path. You can use function `replace` from persistent: 
+```haskell
+replace :: (MonadIO m, PersistRecordBackend record backend)
+            => Key record -> record -> ReaderT backend m ()
+```
+
+**Expected result:** After creating a beer, try updating its name and find it to check it has been updated.
+
+Bonus: This function will not fail if the record does not exist. What can you do to throw an exception when we try to update a beer which does not exist?  
+
 ### Step 8 - Drink it (`DELETE`)
 ### Step 9 - Swagg'it (Swagger)

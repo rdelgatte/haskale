@@ -28,7 +28,9 @@ type AppContext = ReaderT SqlBackend IO
 
 type CreateBeer = "beers" :> BeerInput :> PostNoContent '[ JSON] NoContent
 
-type ApplicationApi = PingApi :<|> "beers" :> Get '[ JSON] [Beer] :<|> FindBeerById :<|> CreateBeer
+type UpdateBeer = "beers" :> Capture "id" Int64 :> BeerInput :> Put '[ JSON] Int64
+
+type ApplicationApi = PingApi :<|> "beers" :> Get '[ JSON] [Beer] :<|> FindBeerById :<|> CreateBeer :<|> UpdateBeer
 
 runServer :: IO ()
 runServer = do
@@ -55,7 +57,7 @@ pingHandler :: AppContext Text
 pingHandler = return "Pong"
 
 server :: ServerT ApplicationApi AppContext
-server = pingHandler :<|> beersHandler :<|> beerByIdHandler :<|> createBeerHandler
+server = pingHandler :<|> beersHandler :<|> beerByIdHandler :<|> createBeerHandler :<|> updateBeerHandler
 
 beersHandler :: AppContext [Beer]
 beersHandler = do
@@ -70,3 +72,9 @@ createBeerHandler beer = do
   key <- insert $ toRow beer
   liftIO . putStrLn $ "Saved beer " <> show beer <> " with key = " <> show key
   return NoContent
+
+updateBeerHandler :: Int64 -> Beer -> AppContext Int64
+updateBeerHandler beerId beer = do
+  replace (toSqlKey beerId) (toRow beer)
+  liftIO . putStrLn $ "Updated beer " <> show beer
+  return beerId
