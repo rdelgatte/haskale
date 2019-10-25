@@ -52,10 +52,10 @@ listening on port 3000
 
 Create a first endpoint to ping our server: **GET /ping** => Returns `"pong"`
 
-- First you need to define your `PingApi` type (in [Lib.hs](src/Lib.hs)) as below:
+- First you need to define your `Ping` type (in [Lib.hs](src/Lib.hs)) as below:
 
 ```haskell
-type PingApi = "ping" :> Get '[???] ??? -- GET /ping
+type Ping = "ping" :> Get '[???] ??? -- GET /ping
 ```
 
 - Secondly, you need to create the handler which will return the expected feedback when the ping endpoint is called: 
@@ -71,10 +71,10 @@ server :: Server Ping
 server = ??
 ```
 
-- Finally you should define a function which creates your application handling the `PingApi` proxy and server defined before:
+- Finally you should define a function which creates your application handling the `Ping` proxy and server defined before:
 ```haskell
 mkApp :: Application
-mkApp = serve (Proxy :: Proxy PingApi) server
+mkApp = serve (Proxy :: Proxy Ping) server
 ```
 
 This function is called from the `runServer` as a parameter to run the server with provided default settings.
@@ -124,9 +124,11 @@ So now, how to get all the beers?
 
 In [src/Constants.hs](src/Constants.hs) there is a `beers` function which returns a list of beers we want to return when calling `GET /beers`.
 
-- Create a `ApplicationAPI` type as below: 
+- Create a `GetAllBeers` type and add it to a "ApplicationApi" type: 
 ```haskell
-type ApplicationApi = PingApi :<|> "beers" :> Get '[ JSON] [Beer]
+type GetAllBeers = "beers" :> Get '[ JSON] [Beer]
+
+type ApplicationApi = Ping :<|> GetAllBeers
 ```
 In this type, we get the previously created `Ping` and we define a new endpoint over `/beers` using the `Get` request. This return a JSON formatted list of `Beer`.
 
@@ -139,7 +141,7 @@ beersHandler = ??
 
 - Update the code to get the compiler happy (you can combine handlers with `:<|>`). What happens if you change the order? Why?
 
-- Update the function `mkApp` to return the right type
+**TODO: check mkapp / application** 
 
 - Run the application and open your browser to check `http://localhost:3000/beers`
 
@@ -147,32 +149,33 @@ beersHandler = ??
 
 ### Step 3 - Find the beer
 
-> "- Moi mon truc, c'est de rajouter une petite goutte de bière quand j'ai battu les oeufs...  - L'adresse, bordel !" [Le Dîner De Cons]
+> \- Moi mon truc, c'est de rajouter une petite goutte de bière quand j'ai battu les oeufs...  
+> \- L'adresse, bordel ! [Le Dîner De Cons]
 
 Let's get your favourite beer by its `id` now: `GET /beers/{searched_id}`
 
 - Create the endpoint as a specific type like: `type FindBeerById = ...`
-You will have to "Capture" the provided id in the path parameters. You can find documentation and example [here](https://hackage.haskell.org/package/servant-0.7.1/docs/Servant-API-Capture.html).
+You will have to `Capture` the provided id in the path parameters. You can find documentation and example [here](https://hackage.haskell.org/package/servant-0.7.1/docs/Servant-API-Capture.html).
 
-This endpoint may return a beer if it exists in the list but it can also return `Nothing`. What should be the output type of this endpoint?
+This endpoint may return a beer if it exists in the list. What should happen if there is no beer for the provided id?
 
-- Create the associated handler function which will take the `searchedId` in parameter.
+- Create the associated handler function which will take the `searchedId` in parameter
 
 - Add the endpoint to `ApplicationApi` and get the code compiling
 
-**Expected result:** 
-- If the beer exist, it should return it
-- Else, it should return `Nothing` which is encoded to `null` in Json
+**Expected result:**  If the beer exists, it should return it.
 
 ### Step 4 - JSON to Model (Aeson - decode)
 
 > "L'homme ne meurt pas en vain, il meurt en bière." [Sandrine Fillassier]
 
-In order to be able to create new beers using a Json body, we need to define the way the beers will be decoded from JSON. 
+In order to be able to create new beers, we need to define the way the beers will be decoded from JSON. 
 
-- First, you need to uncomment the remaining tests in [test/Model/BeerSpec.hs](test/Model/BeerSpec.hs) 
+- First, you need to uncomment the remaining tests in [test/Model/BeerSpec.hs](test/Model/BeerSpec.hs)
+ 
 - Run the tests: `stack test --file-watch`
-- Then you can update [src/Model/Beer.hs](src/Model/Beer.hs) to fix the tests
+
+- Then you can update [src/Model/Beer.hs](src/Model/Beer.hs) to pass the tests
 
 **Expected result:** the tests should pass.
 
@@ -184,7 +187,6 @@ So you'd like to draft your own beer. To do so, we will need to create it by req
 
 ```json
 {
-  "id": 1,
   "name": "Brewdog IPA",
   "alcohol": 5.4,
   "style": "INDIA_PALE_ALE"
@@ -194,14 +196,16 @@ So you'd like to draft your own beer. To do so, we will need to create it by req
 - First, you need to create the endpoint as before: 
     - You will need to provide a request body as Json of Beer model (`ReqBody '[ JSON] Beer`)
     - The request will return nothing so you can use `PostNoContent` and `NoContent` as payload
+    
 - Then you can add this new endpoint to the `ApplicationApi` definition to expose it 
+
 - You will have to fix the compilation issue as there is no handler for this new endpoint so you need to create it
     - It will take the beer as parameter
     - It will return `NoContent`
 
-The handler will have to deal with saving the provided beer. To do so, you can use: `insert $ toRow beer` which will return the key of the saved entity so you can bind it to a variable.
+The handler will have to deal with saving the provided beer. To do so, you can use: `key <- insert (toRow beer)` which will return the key of the saved entity so you can bind it to a variable.
 
-You can then use `liftIO . putStrLn $ "Saved beer with key = " <> show beerId` to log the saved beer to the console.
+You can then use `liftIO (putStrLn ("Saved beer " ++ show beer ++ " with key = " ++ show key))` to log the saved beer to the console.
 
 - What happens if you try to create a malformed Json document? 
 
@@ -210,10 +214,9 @@ You can then use `liftIO . putStrLn $ "Saved beer with key = " <> show beerId` t
 $ curl --request POST \
    --url http://localhost:3000/beers \
    --header 'content-type: application/json' \
-   --cookie JSESSIONID=8BE347DF4D94AE3FFE227E97113825B6 \
    --data '{
    "alcohol": 5.4,
-   "name": "Brewdog IPA 2",
+   "name": "Brewdog IPA",
    "style": "INDIA_PALE_ALE"
  }'
 ```
@@ -223,8 +226,6 @@ $ curl --request POST \
 > "Ce n'est pas parce que la bière coule à flots que vous devez vous y noyer." [Jacques Caron - Retraité]
 
 Now we persist beers in a memory DB, we can refactor the handler which returns all the beers so it fetches them form the DB instead of the [src/Constants.hs file](src/Constants.hs).  
-
-> Update `beersHandler` function so it fetches all the beers from the DB. 
 
 You can use the following statement to retrieve all the `Beers` from the database. 
 ```haskell
@@ -246,8 +247,10 @@ Tip: use `fmap` to iterate over `[Entity BeerRow]` so you can apply the transfor
 **Expected result:** After creating some beers, requesting all should return all of them:
 ```
 $ curl --request GET --url http://localhost:3000/beers
-[{"style":"INDIA_PALE_ALE","alcohol":5.4,"name":"Brewdog IPA","id":1},{"style":"INDIA_PALE_ALE","alcohol":6,"name":"Anosteke IPA","id":2}]
+[{"style":"INDIA_PALE_ALE","alcohol":5.4,"name":"Brewdog IPA","id":1},{"style":"AMBER_ALE","alcohol":10,"name":"Trappe Quadrupel","id":2}]
 ```
+
+**Bonus:** Refactor `beerByIdHandler` as well 
 
 ### Step 7 - Pimp it (`PUT`)
 
@@ -255,16 +258,18 @@ $ curl --request GET --url http://localhost:3000/beers
 
 You can now create and find beers but how would we update a beer?
 
-- Create a `PUT /beers/{$beerId}` endpoint with `Beer` as a Json payload. 
+- Create a `PUT /beers/{$beerId}` endpoint with `Beer` as a Json payload
+
 - As before, add this endpoint to `ApplicationApi` and create the handler so it will update the beer in database whose id is the provided `beerId` from the path. You can use function `replace` from persistent: 
 ```haskell
-replace :: (MonadIO m, PersistRecordBackend record backend)
-            => Key record -> record -> ReaderT backend m ()
+replace :: Key BeerRow -> BeerRow -> AppContext ()
 ```
 
-**Expected result:** After creating a beer, try updating its name and find it to check it has been updated.
+Tip: use `toSqlKey` to transform beer id to `Key BeerRow`
 
-Bonus: This function will not fail if the record does not exist. What can you do to throw an exception when we try to update a beer which does not exist?  
+**Expected result:** After creating a beer, try updating its name and get all beers to check it has been updated.
+
+Bonus: This function will not fail if the record does not exist. What can you do to return HTTP 404 when we try to update a beer which does not exist?  
 
 ### Step 8 - Drink it (`DELETE`)
 
@@ -272,17 +277,18 @@ Bonus: This function will not fail if the record does not exist. What can you do
 
 When you drink a beer, it should be deleted from the database. 
 
-- Create a `DELETE /beers/{$beerId}` endpoint without any request body. 
-- As before, add this endpoint to `ApplicationApi` and create the handler so it will delete the beer in database whose id is the provided `beerId` from the path. You can use function `delete` from persistent: 
+- Create a `DELETE /beers/{$beerId}` endpoint without any request body
+
+- As before, add this endpoint to `ApplicationApi` and create the handler so it will delete the beer in database whose id is the provided `beerId` from the path. You can use function `delete` from Persistent: 
 ```haskell
-delete :: (MonadIO m, PersistRecordBackend record backend) => Key record -> ReaderT backend m ()
+delete :: Key BeerRow -> AppContext ()
 ```
 
-Tip: you will need to explicitly define the provided key is a `Key BeerRow`.  
+Tip: you will need to explicitly define the provided key as a `Key BeerRow`.  
 
-**Expected result:** After creating a beer, find it to check it has been created. Then call the deletion endpoint providing the created beer id and try to find it again. It should return nothing. 
+**Expected result:** After creating a beer, call the deletion endpoint providing the created beer id and check it no longer exists. 
 
-Bonus: This function will not fail if the record does not exist. What can you do to throw an exception when we try to delete a beer which does not exist?  
+Bonus: This function will not fail if the record does not exist. What can you do to return HTTP 404 when we try to delete a beer which does not exist?  
 
 ### Step 9 - Swagg'it (Swagger)
 
@@ -306,15 +312,16 @@ proxyAPIWithSwagger = Proxy
 ```
 - The function running the server (`Lib.hs#runServer`)will use this new proxy to use SwaggerUI: 
 ```haskell
+-- Before
 NoLoggingT $ runSettings settings $ serve proxyAPI (hoistAppServer sqlBackend) 
--- |It should serve the new proxyAPIWithSwagger 
+-- After 
 NoLoggingT $ runSettings settings $ serve proxyAPIWithSwagger (hoistAppServer sqlBackend)
 ```
-- Then you need to change the signature of `hoistServer` to fix the compilation issue:
+- Then you need to change the signature of `hoistAppServer` to fix the compilation issue:
 ```haskell
 hoistAppServer :: SqlBackend -> Server ApiWithSwagger
 ```
-You need to update the function implementation as to fit this new feature. To do so, we will combine (compose) the function returning `Server SwaggerUI` with the existing "hoist-ed" application server.
+You need to update the function implementation to fit this new feature. To do so, we will combine (compose) the function returning `Server SwaggerUI` with the existing "hoist-ed" application server.
 
 The function which returns a Server SwaggerUI can be defined as below: 
 ```haskell
@@ -329,10 +336,10 @@ swaggerServer = swaggerSchemaUIServer swaggerDoc
 
 **Bonus:** You can customize / enrich the swagger documentation defining a function as below: 
 ```haskell
--- |Add generic Swagger configuration like the title, description, etc.
+-- Add generic Swagger configuration like the title, description, etc.
 enrichSwagger :: Swagger -> Swagger
 
--- |And call this function 
+-- And call this function 
 swaggerDoc :: Swagger
 swaggerDoc = enrichSwagger $ toSwagger (Proxy :: Proxy ApplicationApi)
 ```

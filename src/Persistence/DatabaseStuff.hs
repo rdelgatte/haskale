@@ -39,7 +39,6 @@ getAllBeers = do
   liftIO . putStrLn $ "Beers in database are: " <> show beers
   return $ fromRow <$> beers
 
---TODO Fix those functions related to the entity ID vs the model ID
 toRow :: Beer -> BeerRow
 toRow Beer {..} = BeerRow {beerRowName = name, beerRowStyle = style, beerRowAlcohol = toRealFloat <$> alcohol}
 

@@ -24,7 +24,7 @@ import Servant.Swagger.UI
 -- |Servant type for the Swagger endpoints (UI and JSON)
 type SwaggerUI = SwaggerSchemaUI "swagger-ui" "swagger.json"
 
-type PingApi = "ping" :> Get '[ PlainText] Text
+type Ping = "ping" :> Get '[ PlainText] Text
 
 type BeerInput = ReqBody '[ JSON] Beer
 
@@ -40,7 +40,7 @@ type UpdateBeer = "beers" :> Capture "id" Int64 :> BeerInput :> Put '[ JSON] Int
 
 type DeleteBeer = "beers" :> Capture "id" Int64 :> Delete '[ JSON] NoContent
 
-type ApplicationApi = PingApi :<|> GetAllBeers :<|> FindBeerById :<|> CreateBeer :<|> UpdateBeer :<|> DeleteBeer
+type ApplicationApi = Ping :<|> GetAllBeers :<|> FindBeerById :<|> CreateBeer :<|> UpdateBeer :<|> DeleteBeer
 
 type ApiWithSwagger = SwaggerUI :<|> ApplicationApi
 
@@ -57,7 +57,10 @@ runServer = do
      -> do
       runReaderT (runMigration migrateAll) sqlBackend
       -- THEN run the server with the database in the up-to-date schema
-      NoLoggingT $ runSettings settings $ serve proxyAPIWithSwagger (hoistAppServer sqlBackend)
+      NoLoggingT $ runSettings settings (application sqlBackend)
+
+application :: SqlBackend -> Application
+application sqlBackend = serve proxyAPIWithSwagger (hoistAppServer sqlBackend)
 
 swaggerServer :: Server SwaggerUI
 swaggerServer = swaggerSchemaUIServer swaggerDoc
@@ -88,18 +91,18 @@ beersHandler = do
   return $ fromRow <$> beersFromDB
 
 beerByIdHandler :: Int64 -> AppContext (Maybe Beer)
-beerByIdHandler searched = pure (find (\beer -> B.id beer == Just searched) beers)
+beerByIdHandler beerId = pure (find (\beer -> B.id beer == Just beerId) beers)
 
 createBeerHandler :: Beer -> AppContext NoContent
 createBeerHandler beer = do
-  key <- insert $ toRow beer
-  liftIO . putStrLn $ "Saved beer " <> show beer <> " with key = " <> show key
+  key <- insert (toRow beer)
+  liftIO (putStrLn ("Saved beer " ++ show beer ++ " with key = " ++ show key))
   return NoContent
 
 updateBeerHandler :: Int64 -> Beer -> AppContext Int64
 updateBeerHandler beerId beer = do
   replace (toSqlKey beerId) (toRow beer)
-  liftIO . putStrLn $ "Updated beer " <> show beer
+  liftIO . putStrLn $ "Updated beer " ++ show beer
   return beerId
 
 deleteBeerHandler :: Int64 -> AppContext NoContent
