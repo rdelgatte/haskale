@@ -22,7 +22,7 @@ rm -f /usr/local/lib/libz*
 brew install lzlib
 ```
 
-## Start 
+## Few commands 
 
 ### Run the tests
 
@@ -44,16 +44,15 @@ You should see the following message:
 listening on port 3000
 ```
 
-The Swagger is available at `http://localhost:3000/swagger-ui`
-
 ## Steps 
 
 ### Step 0 - Ping... pong
 
-[Lib.hs](src/Lib.hs)
+> "On boira du lait le jour où les vaches mangeront du houblon."
+
 Create a first endpoint to ping our server: **GET /ping** => Returns `"pong"`
 
-- First you need to define your `PingApi` type as below:
+- First you need to define your `PingApi` type (in [Lib.hs](src/Lib.hs)) as below:
 
 ```haskell
 type PingApi = "ping" :> Get '[???] ??? -- GET /ping
@@ -78,7 +77,7 @@ mkApp :: Application
 mkApp = serve (Proxy :: Proxy PingApi) server
 ```
 
-This function is called in the `runServer` entry-point as an argument to run the server with provided default settings.
+This function is called from the `runServer` as a parameter to run the server with provided default settings.
 
 **Expected result:** 
 ```sh
@@ -90,15 +89,17 @@ Good job! You defined your first http endpoint in Haskell with Servant!
 
 ### Step 1 - Model to JSON (Aeson - encode)
 
+> "Comment se protéger contre l'eau polluée ? En buvant de la bière." [Al Bud; humoriste écossais]
+
 In [Model directory](src/Model), we have a simple model definition with a `Beer` and `BeerStyle` modules. 
 
 We know we want to deal with this model as JSON as output so we have to define a way to encode these models to JSON. 
 
-To do so, we are going to use [Aeson](http://hackage.haskell.org/package/aeson) which has already been added as dependency to the project. 
+To do so, we are going to use [Aeson](http://hackage.haskell.org/package/aeson) which is already configured as a dependency to the project. 
 
 Some tests are already defined to validate the implementation so your goal is to propose a way to get the model as encoded.
 
-- First, you need to uncomment the following tests in [test/Model/BeerSpec.hs](test/Model/BeerSpec.hs): 
+- First, you need to uncomment the encoding tests (`test_encode**`) in [test/Model/BeerSpec.hs](test/Model/BeerSpec.hs): 
 ```haskell
 test_encodeValidBeerWithoutAlcoholRate =
   testCase "When encoding a beer without alcohol rate, it returns a JSON" $
@@ -116,6 +117,8 @@ A tip: `encode :: ToJSON a => a -> ByteString`
 **Expected result:** the tests should pass.
 
 ### Step 2 - Get all beers!
+
+> "Il n'y a pas que la bière dans la vie, mais elle améliore tout le reste..." [Stephen Morris; écrivain américain]
 
 So now, how to get all the beers? 
 
@@ -144,7 +147,9 @@ beersHandler = ??
 
 ### Step 3 - Find the beer
 
-Let's get a specific beer by its `id` now: `GET /beers/{searched_id}`
+> "- Moi mon truc, c'est de rajouter une petite goutte de bière quand j'ai battu les oeufs...  - L'adresse, bordel !" [Le Dîner De Cons]
+
+Let's get your favourite beer by its `id` now: `GET /beers/{searched_id}`
 
 - Create the endpoint as a specific type like: `type FindBeerById = ...`
 You will have to "Capture" the provided id in the path parameters. You can find documentation and example [here](https://hackage.haskell.org/package/servant-0.7.1/docs/Servant-API-Capture.html).
@@ -161,6 +166,8 @@ This endpoint may return a beer if it exists in the list but it can also return 
 
 ### Step 4 - JSON to Model (Aeson - decode)
 
+> "L'homme ne meurt pas en vain, il meurt en bière." [Sandrine Fillassier]
+
 In order to be able to create new beers using a Json body, we need to define the way the beers will be decoded from JSON. 
 
 - First, you need to uncomment the remaining tests in [test/Model/BeerSpec.hs](test/Model/BeerSpec.hs) 
@@ -170,6 +177,8 @@ In order to be able to create new beers using a Json body, we need to define the
 **Expected result:** the tests should pass.
 
 ### Step 5 - Draft your beer (`POST`)
+
+> "Bien sûr que je suis de gauche ! Je mange de la choucroute et je bois de la bière." [Jacques Chirac]
 
 So you'd like to draft your own beer. To do so, we will need to create it by requesting to `POST /beers` passing the beer as Json request body like below: 
 
@@ -211,9 +220,11 @@ $ curl --request POST \
 
 ### Step 6 - Get all the beers again!
 
+> "Ce n'est pas parce que la bière coule à flots que vous devez vous y noyer." [Jacques Caron - Retraité]
+
 Now we persist beers in a memory DB, we can refactor the handler which returns all the beers so it fetches them form the DB instead of the [src/Constants.hs file](src/Constants.hs).  
 
-Update `beersHandler` function so it fetches all the beers from the DB. 
+> Update `beersHandler` function so it fetches all the beers from the DB. 
 
 You can use the following statement to retrieve all the `Beers` from the database. 
 ```haskell
@@ -240,7 +251,9 @@ $ curl --request GET --url http://localhost:3000/beers
 
 ### Step 7 - Pimp it (`PUT`)
 
-You can now create and find beers but how would we upgrade a beer?
+> "Celui qui boit de la bière, il s'endort vite; celui qui dort longtemps ne pèche pas; Celui qui ne pèche pas entre au Ciel! Ainsi, buvons de la bière!" [Martin Luther - Moine, Religieux, Scientifique, Théologien (1483 - 1546)]
+
+You can now create and find beers but how would we update a beer?
 
 - Create a `PUT /beers/{$beerId}` endpoint with `Beer` as a Json payload. 
 - As before, add this endpoint to `ApplicationApi` and create the handler so it will update the beer in database whose id is the provided `beerId` from the path. You can use function `replace` from persistent: 
@@ -254,4 +267,72 @@ replace :: (MonadIO m, PersistRecordBackend record backend)
 Bonus: This function will not fail if the record does not exist. What can you do to throw an exception when we try to update a beer which does not exist?  
 
 ### Step 8 - Drink it (`DELETE`)
+
+> "Je suis un buveur occasionnel, le genre de type qui sort boire une bière et qui se réveille à Singapour avec une barbe." [Raymond Chandler]
+
+When you drink a beer, it should be deleted from the database. 
+
+- Create a `DELETE /beers/{$beerId}` endpoint without any request body. 
+- As before, add this endpoint to `ApplicationApi` and create the handler so it will delete the beer in database whose id is the provided `beerId` from the path. You can use function `delete` from persistent: 
+```haskell
+delete :: (MonadIO m, PersistRecordBackend record backend) => Key record -> ReaderT backend m ()
+```
+
+Tip: you will need to explicitly define the provided key is a `Key BeerRow`.  
+
+**Expected result:** After creating a beer, find it to check it has been created. Then call the deletion endpoint providing the created beer id and try to find it again. It should return nothing. 
+
+Bonus: This function will not fail if the record does not exist. What can you do to throw an exception when we try to delete a beer which does not exist?  
+
 ### Step 9 - Swagg'it (Swagger)
+
+> "Bière qui mousse amasse la foule." [Claude Frisoni - Artiste, écrivain (1954 - )]
+
+We created a model and few endpoints to deal with it. Let's add Swagger to expose them.
+
+- First create the SwaggerUI type to use `SwaggerSchemaUI`:
+```haskell
+-- |Servant type for the Swagger endpoints (UI and JSON)
+type SwaggerUI = SwaggerSchemaUI "swagger-ui" "swagger.json"
+```
+- Create a new type to define `ApplicationApi` with the `SwaggerUI` as below: 
+```haskell
+type ApiWithSwagger = SwaggerUI :<|> ApplicationApi
+``` 
+- Define a new `proxyAPIWithSwagger` using this new type: 
+```haskell
+proxyAPIWithSwagger :: Proxy ApiWithSwagger
+proxyAPIWithSwagger = Proxy
+```
+- The function running the server (`Lib.hs#runServer`)will use this new proxy to use SwaggerUI: 
+```haskell
+NoLoggingT $ runSettings settings $ serve proxyAPI (hoistAppServer sqlBackend) 
+-- |It should serve the new proxyAPIWithSwagger 
+NoLoggingT $ runSettings settings $ serve proxyAPIWithSwagger (hoistAppServer sqlBackend)
+```
+- Then you need to change the signature of `hoistServer` to fix the compilation issue:
+```haskell
+hoistAppServer :: SqlBackend -> Server ApiWithSwagger
+```
+You need to update the function implementation as to fit this new feature. To do so, we will combine (compose) the function returning `Server SwaggerUI` with the existing "hoist-ed" application server.
+
+The function which returns a Server SwaggerUI can be defined as below: 
+```haskell
+swaggerServer :: Server SwaggerUI
+swaggerServer = swaggerSchemaUIServer swaggerDoc
+```
+
+- Finally, you need to make sure the `Model` can be used in Schema (use `ToSchema` from schema library).
+ 
+**Expected result:** Run the application and go to `localhost:3000/swagger-ui` and you should see the expected UI: 
+ ![swagger-ui](assets/swagger-ui.png)
+
+**Bonus:** You can customize / enrich the swagger documentation defining a function as below: 
+```haskell
+-- |Add generic Swagger configuration like the title, description, etc.
+enrichSwagger :: Swagger -> Swagger
+
+-- |And call this function 
+swaggerDoc :: Swagger
+swaggerDoc = enrichSwagger $ toSwagger (Proxy :: Proxy ApplicationApi)
+```
