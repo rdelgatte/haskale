@@ -1,0 +1,169 @@
+name:                hask-ale
+version:             0.1.0.0
+github:              "dktunited/hask-ale"
+license:             BSD3
+author:              "Decathlon"
+maintainer:          "Julien Debon / Rémi Delgatte"
+copyright:           "2019 Decathlon"
+
+extra-source-files:
+  - README.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/dktunited/hask-ale#readme>
+
+ghc-options:
+  - -Wall
+  - -Wcompat
+  # Some additional compiler warnings from https://medium.com/mercury-bank/enable-all-the-warnings-a0517bc081c3
+  - -Wincomplete-uni-patterns
+  - -Wincomplete-record-updates
+  - -Wmissing-home-modules
+  - -Widentities
+  - -Wredundant-constraints
+  # Parallel by default
+  - -j
+  # Don't optimize by default (faster build time)
+  - -O0
+
+dependencies:
+  - base >= 4.7 && < 5
+  - scientific
+  - lens
+  # routes
+  - servant
+  - servant-server
+  # Json (de)serialize
+  - aeson
+  - aeson-casing
+  # Http (used by aeson)
+  - wai
+  - wai-extra
+  - warp
+  # Http codes / error types
+  - http-types
+  - time
+  - text
+  # Provides map and set
+  - containers
+  - bytestring
+  # To check members of parsable json
+  - unordered-containers
+  # Swagger (HTTP API + UI)
+  - servant-swagger
+  - servant-swagger-ui
+  - swagger2
+  - insert-ordered-containers
+  # Database stuff (Persistent requires MTL and Logger functions...)
+  - persistent
+  - persistent-sqlite
+  - persistent-template
+  - mtl
+  - monad-logger
+
+default-extensions:
+  - AutoDeriveTypeable
+  - BangPatterns
+  - BinaryLiterals
+  - ConstraintKinds
+  - DataKinds
+  - DefaultSignatures
+  - DeriveDataTypeable
+  - DeriveFoldable
+  - DeriveFunctor
+  - DeriveGeneric
+  - DeriveTraversable
+  - DoAndIfThenElse
+  # To allow multiple declaration of the same field name
+  - DuplicateRecordFields
+  - EmptyDataDecls
+  - ExistentialQuantification
+  - FlexibleContexts
+  - FlexibleInstances
+  - FunctionalDependencies
+  - GADTs
+  - GeneralizedNewtypeDeriving
+  - InstanceSigs
+  - KindSignatures
+  - LambdaCase
+  - MonadFailDesugaring
+  - MultiParamTypeClasses
+  - MultiWayIf
+  - NamedFieldPuns
+  - OverloadedLists
+  - OverloadedStrings
+  - PartialTypeSignatures
+  - PatternGuards
+  - PolyKinds
+  - QuasiQuotes
+  - RankNTypes
+  - RecordWildCards
+  - ScopedTypeVariables
+  - StandaloneDeriving
+  - TemplateHaskell
+  - TupleSections
+  - TypeApplications
+  - TypeFamilies
+  - TypeOperators
+  - TypeSynonymInstances
+  - ViewPatterns
+  - StrictData
+
+library:
+  source-dirs: src
+
+executables:
+  hask-ale-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+    dependencies:
+      - hask-ale
+
+tests:
+  hask-ale-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+      - -Wall
+      - -Wcompat
+      - -Wmissing-home-modules
+      - -Widentities
+      - -Wredundant-constraints
+      # Our test convention for HUnit would make it unnecessarily verbose to add the signature of each test
+      - -fno-warn-missing-signatures
+      # Use orphan instances in tests to add Arbitrary (QuickCheck) behaviour without impacting the Production type
+      - -fno-warn-orphans
+      # Sometimes you want to assert a pattern in tests
+      - -fno-warn-incomplete-uni-patterns
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+      - -O0
+    dependencies:
+      - hask-ale
+      # Property based testing
+      - QuickCheck
+      - quickcheck-instances
+      - quickcheck-arbitrary-adt
+      # Unit testing
+      - HUnit
+      # Test aggregation and discovery
+      - tasty
+      - tasty-quickcheck
+      - tasty-hspec
+      - tasty-hunit
+      - tasty-discover
+      # To assert encoded Json in a specific order
+      - aeson-pretty
+      # To get Json as raw string
+      - raw-strings-qq
