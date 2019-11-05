@@ -1,5 +1,8 @@
 # Hask-Ale :beer:
 
+## Language slides
+https://juliendehos.gitlab.io/lillefp-2019-isomorphic/
+
 ## Pre-requisites
 
 ### Stack
@@ -50,34 +53,20 @@ listening on port 3000
 
 > "On boira du lait le jour où les vaches mangeront du houblon."
 
-Create a first endpoint to ping our server: **GET /ping** => Returns `"pong"`
+We already created a first endpoint to ping our server: **GET /ping** => Returns `"pong"`
 
-- First you need to define your `Ping` type (in [Lib.hs](src/Lib.hs)) as below:
+Let's analyze what is going on in [Controller.hs](src/Controller.hs):
 
-```haskell
-type Ping = "ping" :> Get '[???] ??? -- GET /ping
+- Look at the `Ping` type
+
+- Look at the `pingHandler` handler
+
+- Look at the `server` (currently only serving the Ping API thanks to the handler)
+
+Now run the server:
+```sh
+$ stack run
 ```
-
-- Secondly, you need to create the handler which will return the expected feedback when the ping endpoint is called: 
-```haskell
-pingHandler :: AppContext ??
-pingHandler = return ??
-```
-
-- Then you need to define a function which creates your server and which holds the function that will handle the call `pingHandler`:
-
-```haskell
-server :: Server Ping
-server = ??
-```
-
-- Finally you should define a function which creates your application handling the `Ping` proxy and server defined before:
-```haskell
-mkApp :: Application
-mkApp = serve (Proxy :: Proxy Ping) server
-```
-
-This function is called from the `runServer` as a parameter to run the server with provided default settings.
 
 **Expected result:** 
 ```sh
@@ -85,7 +74,7 @@ $ curl http://localhost:3000/ping
 Pong
 ```
 
-Good job! You defined your first http endpoint in Haskell with Servant! 
+Good job! You defined your first HTTP endpoint in Haskell with Servant! 
 
 ### Step 1 - Model to JSON (Aeson - encode)
 
@@ -95,11 +84,11 @@ In [Model directory](src/Model), we have a simple model definition with a `Beer`
 
 We know we want to deal with this model as JSON as output so we have to define a way to encode these models to JSON. 
 
-To do so, we are going to use [Aeson](http://hackage.haskell.org/package/aeson) which is already configured as a dependency to the project. 
+To do so, we are going to use the [Aeson](http://hackage.haskell.org/package/aeson) library which is already configured as a dependency to the project. 
 
 Some tests are already defined to validate the implementation so your goal is to propose a way to get the model as encoded.
 
-- First, you need to uncomment the encoding tests (`test_encode**`) in [test/Model/BeerSpec.hs](test/Model/BeerSpec.hs): 
+- First, you need to uncomment the **encoding tests** only (`test_encode**`) in [test/Model/BeerSpec.hs](test/Model/BeerSpec.hs): 
 ```haskell
 test_encodeValidBeerWithoutAlcoholRate =
   testCase "When encoding a beer without alcohol rate, it returns a JSON" $
@@ -109,10 +98,10 @@ test_encodeValidBeerWithAlcoholRate =
   testCase "When encoding a beer with alcohol rate, it returns a JSON" $
   encodePretty' encodePrettyOptions beerWithAlcoholRate @?= beerWithAlcoholRateAsJson
 ```
-- Run the tests: `stack test --file-watch`
-- Then you can update [src/Model/Beer.hs](src/Model/Beer.hs) to fix the tests
+- Run the tests: `stack test --file-watch` (this should not even compile)
+- Then update [src/Model/Beer.hs](src/Model/Beer.hs) to fix the compilation and tests
 
-A tip: `encode :: ToJSON a => a -> ByteString`
+Tip: `encode :: ToJSON a => a -> ByteString`
 
 **Expected result:** the tests should pass.
 
@@ -152,7 +141,7 @@ beersHandler = ??
 > \- Moi mon truc, c'est de rajouter une petite goutte de bière quand j'ai battu les oeufs...  
 > \- L'adresse, bordel ! [Le Dîner De Cons]
 
-Let's get your favourite beer by its `id` now: `GET /beers/{searched_id}`
+Let's get your favourite beer by its `identifier` now: `GET /beers/{searched_id}`
 
 - Create the endpoint as a specific type like: `type FindBeerById = ...`
 You will have to `Capture` the provided id in the path parameters. You can find documentation and example [here](https://hackage.haskell.org/package/servant-0.7.1/docs/Servant-API-Capture.html).
@@ -160,6 +149,8 @@ You will have to `Capture` the provided id in the path parameters. You can find 
 This endpoint may return a beer if it exists in the list. What should happen if there is no beer for the provided id?
 
 - Create the associated handler function which will take the `searchedId` in parameter
+
+Tip: if you wonder how to find the beer with the correct identifier in the list of `beers`, you can use [Hoogle](https://hoogle.haskell.org/?hoogle=%28a%20-%3E%20Bool%29%20-%3E%20%5Ba%5D%20-%3E%20Maybe%20a%20package%3Abase&scope=set:stackage) to look for a function by its signature!
 
 - Add the endpoint to `ApplicationApi` and get the code compiling
 
@@ -173,9 +164,9 @@ In order to be able to create new beers, we need to define the way the beers wil
 
 - First, you need to uncomment the remaining tests in [test/Model/BeerSpec.hs](test/Model/BeerSpec.hs)
  
-- Run the tests: `stack test --file-watch`
+- Run the tests: `stack test --file-watch` (this should not even compile)
 
-- Then you can update [src/Model/Beer.hs](src/Model/Beer.hs) to pass the tests
+- Then update [src/Model/Beer.hs](src/Model/Beer.hs) to fix the compilation and tests
 
 **Expected result:** the tests should pass.
 
@@ -203,7 +194,7 @@ So you'd like to draft your own beer. To do so, we will need to create it by req
     - It will take the beer as parameter
     - It will return `NoContent`
 
-The handler will have to deal with saving the provided beer. To do so, you can use: `key <- insert (toRow beer)` which will return the key of the saved entity so you can bind it to a variable.
+The handler will have to deal with saving the provided beer. To do so, you can use: `key <- insert (toRow beer)` which will return the key of the saved entity so you can bind it to a variable (remember the `do` notation from the Haskell language introduction!).
 
 You can then use `liftIO (putStrLn ("Saved beer " ++ show beer ++ " with key = " ++ show key))` to log the saved beer to the console.
 
@@ -225,7 +216,7 @@ $ curl --request POST \
 
 > "Ce n'est pas parce que la bière coule à flots que vous devez vous y noyer." [Jacques Caron - Retraité]
 
-Now we persist beers in a memory DB, we can refactor the handler which returns all the beers so it fetches them form the DB instead of the [src/Constants.hs file](src/Constants.hs).  
+Now we persist beers in a memory DB, we can refactor the handler which returns all the beers so it fetches them form the DB instead of [src/Constants.hs](src/Constants.hs).  
 
 You can use the following statement to retrieve all the `Beers` from the database. 
 ```haskell
@@ -247,7 +238,7 @@ Tip: use `fmap` to iterate over `[Entity BeerRow]` so you can apply the transfor
 **Expected result:** After creating some beers, requesting all should return all of them:
 ```
 $ curl --request GET --url http://localhost:3000/beers
-[{"style":"INDIA_PALE_ALE","alcohol":5.4,"name":"Brewdog IPA","id":1},{"style":"AMBER_ALE","alcohol":10,"name":"Trappe Quadrupel","id":2}]
+[{"style":"INDIA_PALE_ALE","alcohol":5.4,"name":"Brewdog IPA","identifier":1},{"style":"AMBER_ALE","alcohol":10,"name":"Trappe Quadrupel","identifier":2}]
 ```
 
 **Bonus:** Refactor `beerByIdHandler` as well 
@@ -294,42 +285,43 @@ Bonus: This function will not fail if the record does not exist. What can you do
 
 > "Bière qui mousse amasse la foule." [Claude Frisoni - Artiste, écrivain (1954 - )]
 
-We created a model and few endpoints to deal with it. Let's add Swagger to expose them.
+We created a model and some endpoints to deal with it. Let's add Swagger to expose them.
 
-- First create the SwaggerUI type to use `SwaggerSchemaUI`:
+In [src/Application.hs](src/Application.hs):
+- Create the SwaggerUI type to use `SwaggerSchemaUI`:
 ```haskell
--- |Servant type for the Swagger endpoints (UI and JSON)
+-- | Servant type for the Swagger endpoints (UI and JSON)
 type SwaggerUI = SwaggerSchemaUI "swagger-ui" "swagger.json"
 ```
 - Create a new type to define `ApplicationApi` with the `SwaggerUI` as below: 
 ```haskell
 type ApiWithSwagger = SwaggerUI :<|> ApplicationApi
 ``` 
+- The function building the application (`Application.hs#application`) will use this new proxy to use SwaggerUI: 
+```haskell
+-- Before
+application sqlBackend = serve proxyAPI (hoistAppServer sqlBackend) 
+-- After 
+application sqlBackend = serve proxyAPI (swaggerServer :<|> hoistAppServer sqlBackend)
+```
+It should no longer compile because the proxy is of type `Proxy ApplicationApi` but it expects a proxy of type `Proxy ApiWithSwagger`.
 - Define a new `proxyAPIWithSwagger` using this new type: 
 ```haskell
 proxyAPIWithSwagger :: Proxy ApiWithSwagger
 proxyAPIWithSwagger = Proxy
 ```
-- The function running the server (`Lib.hs#runServer`)will use this new proxy to use SwaggerUI: 
-```haskell
--- Before
-NoLoggingT $ runSettings settings $ serve proxyAPI (hoistAppServer sqlBackend) 
--- After 
-NoLoggingT $ runSettings settings $ serve proxyAPIWithSwagger (hoistAppServer sqlBackend)
-```
-- Then you need to change the signature of `hoistAppServer` to fix the compilation issue:
-```haskell
-hoistAppServer :: SqlBackend -> Server ApiWithSwagger
-```
-You need to update the function implementation to fit this new feature. To do so, we will combine (compose) the function returning `Server SwaggerUI` with the existing "hoist-ed" application server.
-
-The function which returns a Server SwaggerUI can be defined as below: 
+Now use this new proxy in the `application` function.
+- The function returning a Server SwaggerUI can be defined as below: 
 ```haskell
 swaggerServer :: Server SwaggerUI
 swaggerServer = swaggerSchemaUIServer swaggerDoc
 ```
-
-- Finally, you need to make sure the `Model` can be used in Schema (use `ToSchema` from schema library).
+`swaggerSchemaUIServer` expects a `Swagger` so let's create one!
+```haskell
+swaggerDoc :: Swagger
+swaggerDoc = toSwagger (Proxy :: Proxy ApplicationApi)
+```
+- Finally, you need to make sure the `Model` can be used in Schema (use `ToSchema` from `schema` library).
  
 **Expected result:** Run the application and go to `localhost:3000/swagger-ui` and you should see the expected UI: 
  ![swagger-ui](assets/swagger-ui.png)

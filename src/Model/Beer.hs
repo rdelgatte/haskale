@@ -10,10 +10,10 @@ import           Model.BeerStyle
 
 data Beer =
   Beer
-    { id      :: Maybe Int64
-    , name    :: Text
-    , style   :: BeerStyle
-    , alcohol :: Maybe Scientific
+    { identifier :: Maybe Int64
+    , name       :: Text
+    , style      :: BeerStyle
+    , alcohol    :: Maybe Scientific
     }
   deriving (Generic, Show, Eq)
 
