@@ -9,7 +9,7 @@ import Control.Monad.Reader
 import Data.Text (Text)
 import Database.Persist.Sqlite as P
 import Network.Wai.Handler.Warp (defaultSettings, runSettings, setBeforeMainLoop, setPort)
-import Persistence.DatabaseStuff
+import Persistence.Database
 import Servant
 
 type Ping = "ping" :> Get '[ PlainText] Text

@@ -4,7 +4,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleContexts #-}
 
-module Persistence.DatabaseStuff where
+module Persistence.Database where
 
 import Control.Monad.IO.Class
 import Control.Monad.Reader
@@ -45,7 +45,7 @@ toRow Beer {..} = BeerRow {beerRowName = name, beerRowStyle = style, beerRowAlco
 fromRow :: Entity BeerRow -> Beer
 fromRow Entity {entityKey, entityVal = BeerRow {..}} =
   Beer
-    { id = Just $ fromSqlKey entityKey
+    { identifier = Just $ fromSqlKey entityKey
     , name = beerRowName
     , style = beerRowStyle
     , alcohol = fromFloatDigits <$> beerRowAlcohol
