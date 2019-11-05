@@ -130,8 +130,6 @@ beersHandler = ??
 
 - Update the code to get the compiler happy (you can combine handlers with `:<|>`). What happens if you change the order? Why?
 
-**TODO: check mkapp / application** 
-
 - Run the application and open your browser to check `http://localhost:3000/beers`
 
 **Expected result:** it should return the list of beers as a JSON array 
