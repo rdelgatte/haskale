@@ -126,7 +126,6 @@ In this type, we get the previously created `Ping` and we define a new endpoint 
 beersHandler :: AppContext [Beer]
 beersHandler = ??
 ``` 
-- Change server signature to: `server :: Server ApplicationApi` as now, it does not only handle the `ping` but the `ApplicationAPI`. 
 
 - Update the code to get the compiler happy (you can combine handlers with `:<|>`). What happens if you change the order? Why?
 
