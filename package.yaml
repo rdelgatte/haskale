@@ -1,10 +1,8 @@
-name:                hask-ale
+name:                haskale
 version:             0.1.0.0
-github:              "dktunited/hask-ale"
+github:              "rdelgatte/haskale"
 license:             BSD3
-author:              "Decathlon"
 maintainer:          "Julien Debon / Rémi Delgatte"
-copyright:           "2019 Decathlon"
 
 extra-source-files:
   - README.md
@@ -16,7 +14,7 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/dktunited/hask-ale#readme>
+description:         Please see the README on GitHub at <https://github.com/rdelgatte/haskale#readme>
 
 ghc-options:
   - -Wall
@@ -68,7 +66,6 @@ dependencies:
   - monad-logger
 
 default-extensions:
-  - AutoDeriveTypeable
   - BangPatterns
   - BinaryLiterals
   - ConstraintKinds
@@ -79,6 +76,7 @@ default-extensions:
   - DeriveFunctor
   - DeriveGeneric
   - DeriveTraversable
+  - DerivingStrategies
   - DoAndIfThenElse
   # To allow multiple declaration of the same field name
   - DuplicateRecordFields
@@ -92,7 +90,6 @@ default-extensions:
   - InstanceSigs
   - KindSignatures
   - LambdaCase
-  - MonadFailDesugaring
   - MultiParamTypeClasses
   - MultiWayIf
   - NamedFieldPuns
@@ -112,6 +109,7 @@ default-extensions:
   - TypeFamilies
   - TypeOperators
   - TypeSynonymInstances
+  - UndecidableInstances
   - ViewPatterns
   - StrictData
 
@@ -119,7 +117,7 @@ library:
   source-dirs: src
 
 executables:
-  hask-ale-exe:
+  haskale-exe:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
@@ -127,10 +125,10 @@ executables:
       - -rtsopts
       - -with-rtsopts=-N
     dependencies:
-      - hask-ale
+      - haskale
 
 tests:
-  hask-ale-test:
+  haskale-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
@@ -150,7 +148,7 @@ tests:
       - -with-rtsopts=-N
       - -O0
     dependencies:
-      - hask-ale
+      - haskale
       # Property based testing
       - QuickCheck
       - quickcheck-instances
