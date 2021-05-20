@@ -1,22 +1,35 @@
-# Hask-Ale :beer:
+# HaskAle :beer:
+
+Haskell hands-on project built in Nov 2019 with Julien Debon (@sir4ur0n) to highlight Haskell in a real world-liked application (HTTP server / DB persistence).
 
 ## Language slides
 https://juliendehos.gitlab.io/lillefp-2019-isomorphic/
 
 ## Pre-requisites
 
-### Stack
+### Using `nix`
 
-Install `Haskell Tool Stack`, see [Haskell Tool Stack Installation](https://docs.haskellstack.org/en/stable/README/)
+If you installed `nix` then you should just use `nix-shell` to be able to use the application directly.
 
-### LZMA Library
+If you want to install it: 
+- Install [`Nix`](https://nixos.org/guides/install-nix.html)
+- _(Optional)_ `direnv`
+  - Install [`direnv`](https://direnv.net/docs/installation.html)
+  - Run `direnv allow` (so nix context is loaded whenever you land in this directory)
+- Run `nix-shell` (this is useless if you installed `direnv`)
+
+### Install Stack
+
+Else, you need to install `Haskell Tool Stack`, see [Haskell Tool Stack Installation](https://docs.haskellstack.org/en/stable/README/)
+
+#### LZMA Library
 
 You may need to install manually the `lzma` library used by the `Swagger` library:
 
 - Fedora: `sudo dnf install ghc-lzma-devel`
 - macOs: `brew install xz`
 
-### [macOs] Libz
+#### [macOs] Libz
 
 For macOs users, you have to re-install `libz` properly following these steps: 
 

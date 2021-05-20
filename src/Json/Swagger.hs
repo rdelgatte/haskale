@@ -12,12 +12,12 @@ type SwaggerUI = SwaggerSchemaUI "swagger-ui" "swagger.json"
 -- |Add generic Swagger configuration like the title, description, etc.
 enrichSwagger :: Swagger -> Swagger
 enrichSwagger swagger =
-  swagger & info . title .~ "Hask-ale" & info . description ?~
+  swagger & info . title .~ "Haskale" & info . description ?~
   "Let's have a look to build a HTTP API server in full Haskell" &
   info .
   contact ?~
   Contact
-    { _contactName = Just "Hask-ale team"
+    { _contactName = Just "Haskale team"
     , _contactEmail = Nothing
-    , _contactUrl = Just $ URL "https://github.com/dktunited/hask-ale"
+    , _contactUrl = Just $ URL "https://github.com/rdelgatte/haskale"
     }
